@@ -1,0 +1,23 @@
+{
+  "name": "smart-home-gateway",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guybartal/smart-home-bot/gateway"
+  },
+  "version": "0.1.2",
+  "private":true,
+  "description": "smart home gateway for connecting home sensors and devices to azure IoT suite",
+  "main": "app.js",
+    "author": "guy bertental",
+  "license": "MIT",
+  
+  "dependencies": {
+    "azure-iot-device": "^1.0.13",
+    "azure-iot-device-amqp": "^1.0.13",
+    "azure-iot-device-amqp-ws": "^1.0.14",
+    "azure-iot-device-http": "^1.0.14",
+    "azure-iot-device-mqtt": "^1.0.13",
+    "johnny-five": "^0.10.0",
+    "j5-sparkfun-weather-shield": "^0.2.0"
+  }
+}
