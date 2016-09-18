@@ -102,6 +102,11 @@ var deviceMetaData = {
 // board reports back that it is initialized and ready.
 board.on("ready", function () {
     console.log("Board connected...");
+    var lights = {
+        'kitchen' : new five.Led(3),
+        'livingroom': new five.Led(5),
+        'bedroom': new five.Led(6)
+    };
 
     // Open the connection to Azure IoT Hub
     // When the connection respondes (either open or error)
@@ -138,9 +143,22 @@ board.on("ready", function () {
                             {
                                 var room = command.Parameters.Room;
                                 var turnOn = command.Parameters.TurnOn;
-
-                                console.log('set light on the ' + room + ' to ' + turnOn);
-                                client.complete(msg, printErrorFor('complete'));
+                                var light = lights[room];
+                                if (light) {
+                                    if (turnOn) {
+                                        light.on();
+                                    }
+                                    else {
+                                        light.off();
+                                    }
+                                    console.log('set light on the ' + room + ' to ' + turnOn);
+                                    client.complete(msg, printErrorFor('complete'));
+                                }
+                                else{
+                                    console.log('failed setting light on the ' + room + ' to ' + turnOn + ', room was not found!');
+                                    client.reject(msg, printErrorFor('reject'));
+                                }
+                                
                                 break;
                             }
                         case 'TurnAC':
@@ -194,7 +212,6 @@ board.on("ready", function () {
             console.log("sending device telemetry...");
             weather.on("data", function () {
                 //console.log("weather data event fired...");
-
                 var payload = JSON.stringify({
                     "DeviceId": deviceId,
                     "Temperature": this.celsius,
