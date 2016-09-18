@@ -1,22 +1,25 @@
 // https://github.com/ThingLabsIo/IoTLabs/tree/master/Arduino/Weather
 'use strict';
 
-var five = require ("johnny-five");
+var five = require("johnny-five");
 var Shield = require("j5-sparkfun-weather-shield")(five);
 var device = require('azure-iot-device');
-var lat,lang,connectionString;
-var comPort = process.argv[3];
 
-lat = 32.006571;
-lang = 34.794896;
-connectionString = 'HostName=guy-iot-labs.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=fVY8HwNF9a81tfjwljp4cFut491U0l9wnyQQMYbbv20=';
+if (process.argv.length != 3) {
+    console.log('please provide device com port');
+    return;
+}
+
+var comPort = process.argv[2];
+
+var connectionString = 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
 
 // Define the protocol that will be used to send messages to Azure IoT Hub
 // For this lab we will use AMQP over Web Sockets.
 // If you want to use a different protocol, comment out the protocol you want to replace, 
 // and uncomment one of the other transports.
-var Protocol = require('azure-iot-device-amqp-ws').AmqpWs;
-//var Protocol = require('azure-iot-device-amqp').Amqp;
+//var Protocol = require('azure-iot-device-amqp-ws').AmqpWs;
+var Protocol = require('azure-iot-device-amqp').Amqp;
 // var Protocol = require('azure-iot-device-http').Http;
 // var Protocol = require('azure-iot-device-mqtt').Mqtt;
 
@@ -33,10 +36,12 @@ var deviceId = device.ConnectionString.parse(connectionString).DeviceId;
 
 console.log("Device ID: " + deviceId);
 
+console.log("Connecting sparkfun board on com port: " + comPort);
+
 // Create a Johnny-Five board instance to represent your Particle Photon
 // Board is simply an abstraction of the physical hardware, whether is is a 
 // Photon, Arduino, Raspberry Pi or other boards. 
-var board = new five.Board({ port: comPort});
+var board = new five.Board({ port: comPort });
 
 /*
 // You may optionally specify the port by providing it as a property
@@ -50,80 +55,175 @@ new five.Board({ port: "/dev/ttyUSB*" });
 new five.Board({ port: "COM*" });
 */
 
+
+// Send device meta data
+var deviceMetaData = {
+    'ObjectType': 'DeviceInfo',
+    'IsSimulatedDevice': 0,
+    'Version': '1.0',
+    'DeviceProperties': {
+        'DeviceID': deviceId,
+        'HubEnabledState': 1,
+        'CreatedTime': '2016-09-21T20:28:55.5448990Z',
+        'DeviceState': 'normal',
+        'UpdatedTime': null,
+        'Manufacturer': 'SparkFun',
+        'ModelNumber': 'RedBoard DEV-12757',
+        'SerialNumber': 'SER9090',
+        'FirmwareVersion': '1.10',
+        'Platform': 'node.js',
+        'Processor': 'ATmega328',
+        'InstalledRAM': '32 KB',
+        'Latitude': 32.006571,
+        'Longitude': 34.794896
+    },
+    'Commands': [
+        {
+            'Name': 'TurnLight',
+            'Parameters': [
+                { 'Name': 'Room', 'Type': 'string' },
+                { 'Name': 'TurnOn', 'Type': 'boolean' }]
+        },
+        {
+            'Name': 'TurnAC',
+            'Parameters': [
+                { 'Name': 'Room', 'Type': 'string' },
+                { 'Name': 'TurnOn', 'Type': 'boolean' }]
+        },
+        {
+            'Name': 'SetACTemperature',
+            'Parameters': [
+                { 'Name': 'Room', 'Type': 'string' },
+                { 'Name': 'Temperature', 'Type': 'double' }]
+        }]
+};
+
 // The board.on() executes the anonymous function when the 
 // board reports back that it is initialized and ready.
-board.on("ready", function() {
+board.on("ready", function () {
     console.log("Board connected...");
-    
+
     // Open the connection to Azure IoT Hub
     // When the connection respondes (either open or error)
     // the anonymous function is executed
-    client.open(function(err) {
+    client.open(function (err) {
         console.log("Azure IoT connection open...");
-        
-        if(err) {
+
+        if (err) {
             // If there is a connection error, show it
-            console.error('Could not connect: ' + err.message);
+            printErrorFor('open')(err);
         } else {
             // If the client gets an error, handle it
             client.on('error', function (err) {
-                console.error(err.message);
+                printErrorFor('client')(err);
+                if (sendInterval) {
+                    clearInterval(sendInterval);
+                }
+                client.close();
             });
 
-/* unmark for displaying fire alarm message from cloud
-             client.on('message', function (msg) {
-                
-                console.log(msg.data);
-               
-                client.complete(msg, printResultFor('completed'));
-            });
-*/
-            // If the connection opens, set up the weather shield object
+            // send device metadata to iot suite backoffice
+            //console.log('Sending device metadata:\n' + JSON.stringify(deviceMetaData));
+            console.log('Sending device metadata');
             
+            client.sendEvent(new Message(JSON.stringify(deviceMetaData)), printErrorFor('send metadata'));
+
+            client.on('message', function (msg) {
+                //console.log('receive data: ' + msg.getData());
+
+                try {
+                    var command = JSON.parse(msg.getData());
+                    switch (command.Name) {
+                        case 'TurnLight':
+                            {
+                                var room = command.Parameters.Room;
+                                var turnOn = command.Parameters.TurnOn;
+
+                                console.log('set light on the ' + room + ' to ' + turnOn);
+                                client.complete(msg, printErrorFor('complete'));
+                                break;
+                            }
+                        case 'TurnAC':
+                            {
+                                var room = command.Parameters.Room;
+                                var turnOn = command.Parameters.TurnOn;
+
+                                console.log('set AC on the ' + room + ' to ' + turnOn);
+                                client.complete(msg, printErrorFor('complete'));
+                                break;
+                            }
+                        case 'SetACTemperature':
+                            {
+                                var room = command.Parameters.Room;
+                                var temperature = command.Parameters.Temperature;
+
+                                console.log('set AC temperature on the ' + room + ' to ' + temperature + 'C');
+                                client.complete(msg, printErrorFor('complete'));
+                                break;
+                            }
+                        default:
+                            {
+                                console.log('command ' + command.Name + ' is not supported');
+                                client.reject(msg, printErrorFor('reject'));
+                                break;
+                            }
+                    }
+                }
+                catch (err) {
+                    printErrorFor('parse received message')(err);
+                    client.reject(msg, printErrorFor('reject'));
+                }
+            });
+
+            // If the connection opens, set up the weather shield object
+
             // The SparkFun Weather Shield has two sensors on the I2C bus - 
             // a humidity sensor (HTU21D) which can provide both humidity and temperature, and a 
             // barometer (MPL3115A2) which can provide both barometric pressure and humidity.
             // Controllers for these are wrapped in a convenient plugin class:
             var weather = new Shield({
                 variant: "ARDUINO", // or PHOTON
-                freq: 1000,         // Set the callback frequency to 1-second
+                freq: 5000,         // Set the callback frequency to 1-second
                 elevation: 100      // Go to http://www.WhatIsMyElevation.com to get your current elevation
             });
+
 
             // The weather.on("data", callback) function invokes the anonymous callback function 
             // whenever the data from the sensor changes (no faster than every 25ms). The anonymous 
             // function is scoped to the object (e.g. this == the instance of Weather class object). 
+            console.log("sending device telemetry...");
             weather.on("data", function () {
-                console.log("weather data event fired...");
+                //console.log("weather data event fired...");
+
                 var payload = JSON.stringify({
-                    deviceId: deviceId,
-                    lat: lat,
-                    lang: lang,
-                    // celsius & fahrenheit are averages taken from both sensors on the shield
-                    celsius: this.celsius,
-                    fahrenheit: this.fahrenheit,
-                    relativeHumidity: this.relativeHumidity,
-                    pressure: this.pressure,
-                    feet: this.feet,
-                    meters: this.meters,
-                    date: new Date()
+                    "DeviceId": deviceId,
+                    "Temperature": this.celsius,
+                    "Humidity": this.relativeHumidity//,
+                    //"ExternalTemperature": null,
                 });
-                
+
                 // Create the message based on the payload JSON
                 var message = new Message(payload);
                 // For debugging purposes, write out the message payload to the console
-                console.log("Sending message: " + message.getData());
+                //console.log("Sending message: " + message.getData());
                 // Send the message to Azure IoT Hub
-                client.sendEvent(message, printResultFor('send'));
+                client.sendEvent(message, printErrorFor('send'));
             });
         }
     });
 });
-    
+
 // Helper function to print results in the console
 function printResultFor(op) {
-  return function printResult(err, res) {
-     if (err) console.log(op + ' error: ' + err.toString());
-     if (res) console.log(op + ' status: ' + res.constructor.name);
-  };
+    return function printResult(err, res) {
+        if (err) console.log(op + ' error: ' + err.toString());
+        if (res) console.log(op + ' status: ' + res.constructor.name);
+    };
+}
+
+// Helper function to print results for an operation
+function printErrorFor(op) {
+    return function printError(err) {
+        if (err) console.log(op + ' error: ' + err.toString());
+    };
 }
