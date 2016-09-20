@@ -139,7 +139,8 @@ board.on("ready", function () {
                 try {
                     var command = JSON.parse(msg.getData());
                     switch (command.Name) {
-                        case 'TurnLight':
+                        case 'TurnOnLightsInRoom':
+                        case 'TurnOffLightsInRoom':
                             {
                                 var room = command.Parameters.Room;
                                 var turnOn = command.Parameters.TurnOn;
@@ -152,7 +153,7 @@ board.on("ready", function () {
                                         light.off();
                                     }
                                     console.log('set light on the ' + room + ' to ' + turnOn);
-                                    client.complete(msg, printErrorFor('complete'));
+                                    client.complete(msg, printResultFor('complete'));
                                 }
                                 else{
                                     console.log('failed setting light on the ' + room + ' to ' + turnOn + ', room was not found!');
