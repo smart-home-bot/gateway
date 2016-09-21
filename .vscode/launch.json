@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/app.js",
             "stopOnEntry": false,
-            "args": ["COM7"],
+            "args": ["COM8"],
             "cwd": "${workspaceRoot}",
             "preLaunchTask": null,
             "runtimeExecutable": null,
@@ -15,7 +15,8 @@
                 "--nolazy"
             ],
             "env": {
-                "NODE_ENV": "development"
+                "NODE_ENV": "development",
+                "IOTHUB_CONNECTION_STRING": "HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ=="
             },
             "console": "internalConsole",
             "sourceMaps": false,

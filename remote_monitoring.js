@@ -10,7 +10,7 @@ var Message = require('azure-iot-device').Message;
 
 // String containing Hostname, Device Id & Device Key in the following formats:
 //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
-var connectionString = 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
+var connectionString = process.env.IOTHUB_CONNECTION_STRING || 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
 var deviceId = ConnectionString.parse(connectionString).DeviceId;
 
 // Sensors data

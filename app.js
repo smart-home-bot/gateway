@@ -12,7 +12,7 @@ if (process.argv.length != 3) {
 
 var comPort = process.argv[2];
 
-var connectionString = 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
+var connectionString = process.env.IOTHUB_CONNECTION_STRING || 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
 
 // Define the protocol that will be used to send messages to Azure IoT Hub
 // For this lab we will use AMQP over Web Sockets.
