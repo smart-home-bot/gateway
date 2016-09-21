@@ -137,7 +137,16 @@ board.on("ready", function () {
                 //console.log('receive data: ' + msg.getData());
 
                 try {
-                    var command = JSON.parse(msg.getData());
+                    var command;
+                    // Microsoft bot framework channel emulator 
+                    if (msg.data.length){
+                        command = JSON.parse(msg.getData());
+                    }
+                    // real bot
+                    else {
+                        command = JSON.parse(msg.data.data);    
+                    }
+
                     switch (command.Name) {
                         case 'TurnOnLightsInRoom':
                         case 'TurnOffLightsInRoom':
