@@ -135,7 +135,7 @@ board.on("ready", function () {
             // send device metadata to iot suite backoffice
             //console.log('Sending device metadata:\n' + JSON.stringify(deviceMetaData));
             console.log('Sending device metadata');
-            
+
             client.sendEvent(new Message(JSON.stringify(deviceMetaData)), printErrorFor('send metadata'));
 
             client.on('message', function (msg) {
@@ -144,12 +144,12 @@ board.on("ready", function () {
                 try {
                     var command;
                     // Microsoft bot framework channel emulator 
-                    if (msg.data.length){
+                    if (msg.data.length) {
                         command = JSON.parse(msg.getData());
                     }
                     // real bot
                     else {
-                        command = JSON.parse(msg.data.data);    
+                        command = JSON.parse(msg.data.data);
                     }
 
                     switch (command.Name) {
@@ -158,22 +158,35 @@ board.on("ready", function () {
                             {
                                 var room = command.Parameters.Room;
                                 var turnOn = command.Parameters.TurnOn;
-                                var light = lights[room];
-                                if (light) {
-                                    if (turnOn) {
-                                        light.on();
+
+                                if (room == 'all') {
+                                    lights.keys.forEach(function (key) {
+                                        if (turnOn) {
+                                            lights[key].on();
+                                        }
+                                        else {
+                                            lights[key].off();
+                                        }
+                                    });
+                                }
+                                else {
+                                    var light = lights[room];
+                                    if (light) {
+                                        if (turnOn) {
+                                            light.on();
+                                        }
+                                        else {
+                                            light.off();
+                                        }
+                                        console.log('set light on the ' + room + ' to ' + turnOn);
+                                        client.complete(msg, printResultFor('complete'));
                                     }
                                     else {
-                                        light.off();
+                                        console.log('failed setting light on the ' + room + ' to ' + turnOn + ', room was not found!');
+                                        client.reject(msg, printErrorFor('reject'));
                                     }
-                                    console.log('set light on the ' + room + ' to ' + turnOn);
-                                    client.complete(msg, printResultFor('complete'));
                                 }
-                                else{
-                                    console.log('failed setting light on the ' + room + ' to ' + turnOn + ', room was not found!');
-                                    client.reject(msg, printErrorFor('reject'));
-                                }
-                                
+
                                 break;
                             }
                         case 'TurnAC':
