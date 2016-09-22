@@ -103,10 +103,15 @@ var deviceMetaData = {
 board.on("ready", function () {
     console.log("Board connected...");
     var lights = {
-        'kitchen' : new five.Led(3),
-        'livingroom': new five.Led(5),
-        'bedroom': new five.Led(6)
+        'kitchen': new five.Led(3),
+        'terace': new five.Led(5),
+        'livingroom': new five.Led(6),
+        "boy's room": new five.Led(7),
+        'bedroom': new five.Led(8),
+        'bathroom': new five.Led(9),
+        "girl's room": new five.Led(10),
     };
+
 
     // Open the connection to Azure IoT Hub
     // When the connection respondes (either open or error)
