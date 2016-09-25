@@ -98,7 +98,7 @@ var deviceMetaData = {
         }]
 };
 
-var rooms = ['kitchen', 'terrace', 'livingroom', "boy's room", 'bedroom', 'bathroom', "girl's room", "all"];
+var rooms = ['kitchen', 'terrace', 'livingroom', "boy's room", 'bedroom', 'bathroom', "girl's room"];
 
 
 // The board.on() executes the anonymous function when the 
@@ -164,6 +164,7 @@ board.on("ready", function () {
 
                                 if (room == 'all') {
                                     rooms.forEach(function (key) {
+                                        console.log('set light on the ' + key + ' to ' + turnOn);
                                         if (turnOn) {
                                             lights[key].on();
                                         }
