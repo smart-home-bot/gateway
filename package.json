@@ -18,6 +18,7 @@
     "azure-iot-device-http": "1.0.15",
     "azure-iot-device-mqtt": "1.0.14",
     "johnny-five": "0.10.0",
-    "j5-sparkfun-weather-shield": "0.2.0"
+    "j5-sparkfun-weather-shield": "0.2.0",
+    "oled-js":"^4.0.2"
   }
 }

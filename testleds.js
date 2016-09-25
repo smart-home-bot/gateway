@@ -1,6 +1,7 @@
 'use strict';
 
 var five = require("johnny-five");
+var Oled = require('oled-js');
 var Shield = require("j5-sparkfun-weather-shield")(five);
 if (process.argv.length != 3) {
     console.log('please provide device com port');
@@ -12,7 +13,7 @@ console.log("Connecting sparkfun board on com port: " + comPort);
 var board = new five.Board({ port: comPort });
 board.on("ready", function () {
     console.log("Board connected...");
-    var lights = {
+    /*var lights = {
         'kitchen': new five.Led(3),
         'terace': new five.Led(5),
         'livingroom': new five.Led(6),
@@ -28,4 +29,21 @@ board.on("ready", function () {
         console.log(key);
         lights[key].on();
     });
+    */
+
+    var opts = {
+    width: 64,
+    height: 48,
+    microview: true
+  };
+
+  var oled = new Oled(board, five, opts);
+  // do cool oled things here
+    console.log("turnOnDisplay");
+
+  oled.turnOnDisplay();
+
+    console.log("drawLine");
+  
+  oled.drawLine(1, 1, 128, 32, 1);
 });

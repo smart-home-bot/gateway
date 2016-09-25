@@ -98,13 +98,16 @@ var deviceMetaData = {
         }]
 };
 
+var rooms = ['kitchen', 'terrace', 'livingroom', "boy's room", 'bedroom', 'bathroom', "girl's room", "all"];
+
+
 // The board.on() executes the anonymous function when the 
 // board reports back that it is initialized and ready.
 board.on("ready", function () {
     console.log("Board connected...");
     var lights = {
         'kitchen': new five.Led(3),
-        'terace': new five.Led(5),
+        'terrace': new five.Led(5),
         'livingroom': new five.Led(6),
         "boy's room": new five.Led(7),
         'bedroom': new five.Led(8),
@@ -160,7 +163,7 @@ board.on("ready", function () {
                                 var turnOn = command.Parameters.TurnOn;
 
                                 if (room == 'all') {
-                                    lights.keys.forEach(function (key) {
+                                    rooms.forEach(function (key) {
                                         if (turnOn) {
                                             lights[key].on();
                                         }
