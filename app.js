@@ -79,7 +79,13 @@ var deviceMetaData = {
     },
     'Commands': [
         {
-            'Name': 'TurnLight',
+            'Name': 'TurnOnLightsInRoom',
+            'Parameters': [
+                { 'Name': 'Room', 'Type': 'string' },
+                { 'Name': 'TurnOn', 'Type': 'boolean' }]
+        },
+        {
+            'Name': 'TurnOffLightsInRoom',
             'Parameters': [
                 { 'Name': 'Room', 'Type': 'string' },
                 { 'Name': 'TurnOn', 'Type': 'boolean' }]
