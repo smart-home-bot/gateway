@@ -12,7 +12,7 @@ if (process.argv.length != 3) {
 
 var comPort = process.argv[2];
 
-var connectionString = process.env.IOTHUB_CONNECTION_STRING || 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=ADGq4aFRFacADVCZDBGDAGH==';
+var connectionString = process.env.IOTHUB_CONNECTION_STRING || 'HostName=smart-home-bot.azure-devices.net;DeviceId=HomeIotGateway;SharedAccessKey=SQot48qYaHkidKrdOz7dJQ==';
 
 // Define the protocol that will be used to send messages to Azure IoT Hub
 // For this lab we will use AMQP over Web Sockets.
@@ -121,6 +121,10 @@ board.on("ready", function () {
         "girl's room": new five.Led(10),
     };
 
+    var motor = new five.Motor({
+        pin: 11
+      });
+
 
     // Open the connection to Azure IoT Hub
     // When the connection respondes (either open or error)
@@ -162,8 +166,7 @@ board.on("ready", function () {
                     }
 
                     switch (command.Name) {
-                        case 'TurnOnLightsInRoom':
-                        case 'TurnOffLightsInRoom':
+                        case 'TurnLightsInRoom':
                             {
                                 var room = command.Parameters.Room;
                                 var turnOn = command.Parameters.TurnOn;
@@ -204,7 +207,8 @@ board.on("ready", function () {
                                 var room = command.Parameters.Room;
                                 var turnOn = command.Parameters.TurnOn;
 
-                                console.log('set AC on the ' + room + ' to ' + turnOn);
+                                console.log('set AC to ' + turnOn);
+                                turnOn? motor.start(): motor.stop();
                                 client.complete(msg, printErrorFor('complete'));
                                 break;
                             }
